@@ -1,6 +1,60 @@
-# api.py
+# # api.py
+# from fastapi import FastAPI, UploadFile, File
+# from fastapi.middleware.cors import CORSMiddleware
+# import pandas as pd
+# from hybrid_insight_engine import generate_combined_insights
+# from trends import plot_health_trends
+# import base64
+# from io import BytesIO
+
+# app = FastAPI()
+
+# # ✅ Replace with your actual deployed frontend URL
+# origins = [
+#     "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",
+#     "http://localhost:3000"  # Optional: for local testing
+# ]
+
+# # ✅ CORS setup so frontend can access backend
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=[
+#         "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",  # 🟢 Replace this with your actual frontend URL
+#     ],
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+
+# @app.post("/upload-csv/")
+# async def upload_csv(file: UploadFile = File(...)):
+#     try:
+#         # Load CSV
+#         df = pd.read_csv(file.file)
+#         print("✅ CSV successfully loaded.")
+#         print("📊 Data preview:\n", df.head())
+
+#         # Generate insights
+#         insights = generate_combined_insights(df)
+#         print("✅ Insights generated.")
+
+#         # Generate plot and convert to base64
+#         fig = plot_health_trends(df)
+#         buf = BytesIO()
+#         fig.savefig(buf, format="png")
+#         img_str = base64.b64encode(buf.getvalue()).decode()
+
+#         return {
+#             "insights": insights,
+#             "trend_image": img_str
+#         }
+#     except Exception as e:
+#         print("❌ Error during processing:", str(e))
+#         return {"error": str(e)}
+
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import pandas as pd
 from hybrid_insight_engine import generate_combined_insights
 from trends import plot_health_trends
@@ -9,18 +63,17 @@ from io import BytesIO
 
 app = FastAPI()
 
-# ✅ Replace with your actual deployed frontend URL
+# ✅ Replace with your actual frontend deployment URL
 origins = [
     "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",
-    "http://localhost:3000"  # Optional: for local testing
+    "http://localhost:3000"
 ]
 
-# ✅ CORS setup so frontend can access backend
+# ✅ CORS middleware setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",  # 🟢 Replace this with your actual frontend URL
-    ],
+    allow_origins=origins,  # reference the list instead of redefining
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -29,25 +82,34 @@ app.add_middleware(
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
     try:
-        # Load CSV
+        # ✅ Load and preview CSV
         df = pd.read_csv(file.file)
         print("✅ CSV successfully loaded.")
         print("📊 Data preview:\n", df.head())
 
-        # Generate insights
+        # ✅ Generate rule + ML insights
         insights = generate_combined_insights(df)
         print("✅ Insights generated.")
 
-        # Generate plot and convert to base64
+        # ✅ Generate trend plot and encode as base64
         fig = plot_health_trends(df)
+        if fig is None:
+            raise ValueError("Trend figure generation failed (None returned).")
+
         buf = BytesIO()
         fig.savefig(buf, format="png")
-        img_str = base64.b64encode(buf.getvalue()).decode()
+        buf.seek(0)
+        img_str = base64.b64encode(buf.read()).decode()
+        buf.close()
 
         return {
             "insights": insights,
             "trend_image": img_str
         }
+
     except Exception as e:
         print("❌ Error during processing:", str(e))
-        return {"error": str(e)}
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
