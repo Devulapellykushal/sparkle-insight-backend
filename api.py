@@ -11,18 +11,20 @@ app = FastAPI()
 
 # ✅ Replace with your actual deployed frontend URL
 origins = [
-    "https://cursor-oyry9suux-devulapellykushals-projects.vercel.app",
+    "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",
     "http://localhost:3000"  # Optional: for local testing
 ]
 
 # ✅ CORS setup so frontend can access backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=[
+        "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",  # 🟢 Replace this with your actual frontend URL
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
