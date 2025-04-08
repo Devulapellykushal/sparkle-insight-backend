@@ -1,0 +1,10 @@
+__pycache__/
+.env
+*.zip
+*.mov
+*.mp4
+*.jpg
+*.jpeg
+*.pdf
+*.docx
+*.DS_Store
