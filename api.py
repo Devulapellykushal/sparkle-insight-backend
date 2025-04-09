@@ -11,7 +11,7 @@ app = FastAPI()
 
 # ✅ Replace with your actual deployed frontend URL
 origins = [
-    "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",
+    "https://cursor-nxh6cv6tb-devulapellykushals-projects.vercel.app/",
     "http://localhost:3000"  # Optional: for local testing
 ]
 
@@ -19,7 +19,7 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://cursor-56s5mhmuz-devulapellykushals-projects.vercel.app",  # 🟢 Replace this with your actual frontend URL
+        "https://cursor-nxh6cv6tb-devulapellykushals-projects.vercel.app/",  # 🟢 Replace this with your actual frontend URL
     ],
     allow_methods=["*"],
     allow_headers=["*"],
